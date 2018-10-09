@@ -10,8 +10,48 @@ output: github_document
 ## First load dataset
 
 ```{r loading BRSS data}
+install.packages("devtools")
+devtools::install_github("p8105/p8105.datasets")
 
 library(p8105.datasets)
 data(brfss_smart2010)
+
+```
+
+```{r upload necessary packages}
+
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+
+```
+
+To clean the dataset, the variable names will be cleaned using the janitor package, function clean_names. Change the variable names as needed.
+The data is filtered based on topic, Overall Health, and responses Excellent to Poor. The response variable will be turned into a factor variable and its responses ordered.
+
+```{r data cleaning step}
+brfss_smart2010 = janitor::clean_names(brfss_smart2010)
+
+filtered_brfss_smart2010 = filter(brfss_smart2010, topic == "Overall Health") %>% 
+  filter(response == "Excellent" | response == "Very Good" | response == "Good" | response == "Fair" | response == "Poor") %>% 
+  mutate(response = factor(response, levels = str_c(c("Excellent", "Very Good", "Good", "Fair", "Poor"))))
+
+levels(filtered_brfss_smart2010$response)
+```
+
+```{r states observed at 7 locations in 2002}
+filtered_brfss_smart2010 %>% 
+  filter(year == "2002") %>% 
+  distinct(locationdesc) %>% 
+  separate(locationdesc, into = c("state", "county"), sep = "-") %>% 
+  count(state) %>% 
+  filter(n == 7)
+```
+
+To determine how many states were observed at 7 county locations, the number of distinct state-county values were determined, these values were seperated, and the number of times each state occurred was counted. The states that were counted as having appeared 7 times were filtered out.
+The states are as follows: CT, FL and NC.
+
+```{r creating spaghetti plot # locations in each state, 2002 - 2010}
+
 
 ```
