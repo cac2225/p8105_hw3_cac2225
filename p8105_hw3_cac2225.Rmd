@@ -21,6 +21,7 @@ brfss_smart2010 = brfss_smart2010
 library(tidyverse)
 library(dplyr)
 library(ggplot2)
+library(patchwork)
 
 ```
 
@@ -31,8 +32,8 @@ The data is filtered based on topic, Overall Health, and responses Excellent to 
 brfss_smart2010 = janitor::clean_names(brfss_smart2010)
 
 filtered_brfss_smart2010 = filter(brfss_smart2010, topic == "Overall Health") %>% 
-  filter(response == "Excellent" | response == "Very Good" | response == "Good" | response == "Fair" | response == "Poor") %>% 
-  mutate(response = factor(response, levels = str_c(c("Excellent", "Very Good", "Good", "Fair", "Poor"))))
+  filter(response == "Excellent" | response == "Very good" | response == "Good" | response == "Fair" | response == "Poor") %>% 
+  mutate(response = factor(response, levels = str_c(c("Excellent", "Very good", "Good", "Fair", "Poor"))))
 
 ```
 
@@ -61,7 +62,7 @@ plot_spaghetti = filtered_brfss_smart2010 %>%
 ggplot(plot_spaghetti, aes(x = year, y = n_counties, color = state)) + geom_line()
 ```
 
-First determined what the minimum and maximum year values are, which are 2002 and 2010, thus no need to filter by year any further. Create a new set of data, named plot_spaghetti, seperating the variable locationdesc to ultimately count the number of times a state is recorded within a certain year. Plot this setting year on the x axis, number of times a state has appeared which equals number of locations per state, and a different color for each state.
+First I determined what the minimum and maximum year values are, which are 2002 and 2010, thus there was no need to filter by year any further. I created a new set of data, named plot_spaghetti, seperating the variable locationdesc to ultimately count the number of times a state is recorded within a certain year. I plotted this setting year on the x axis, number of times a state has appeared which equals number of locations per state, and a different color for each state.
 
 ```{r table of 2002, 2006 and 2010 proportion of Excellent responses in NY}
 table_filt_brss_smart2010 = filtered_brfss_smart2010 %>% 
@@ -73,13 +74,56 @@ table_filt_brss_smart2010 = filtered_brfss_smart2010 %>%
             sd_Excellent = sd(data_value))
 ```  
 
-Filter the data set by year (2002, 2006 and 2010), response (Excellent) and locationabbr (NY). Calculate the mean and standard deviation of the proportion of Excellent responses across NY state.
+Dataset was filtered by year (2002, 2006 and 2010), response (Excellent) and locationabbr (NY). The mean and standard deviation of the proportion of Excellent responses across NY state were calculated using the group by and summarize functions.
 
 ```{r avg proportion of each response per state}
 
 plot_avg_response = filtered_brfss_smart2010 %>% 
   group_by(year, locationabbr, response) %>% 
   summarize(proportion_response = mean(data_value))
+
+plot_excellent = plot_avg_response %>% 
+  filter(response == "Excellent") %>% 
+  ggplot(aes(x = year, y = proportion_response, color = locationabbr)) + 
+  geom_line() + 
+  theme(legend.position = "none") + 
+  labs(
+    title = "Proportion of Excellent Responses, 2002 to 2010 per State",
+    y = "Proportion of Excellent Responses")
+
+plot_very_good = plot_avg_response %>% 
+  filter(response == "Very good") %>% 
+  ggplot(aes(x = year, y = proportion_response, color = locationabbr)) + 
+  geom_line() + 
+  theme(legend.position = "none") + 
+  labs( title = "Proportion of Very good Responses, 2002 to 2010 per State",
+    y = "Proportion of Very good Responses")
+  
+plot_good = plot_avg_response %>% 
+  filter(response == "Good") %>% 
+  ggplot(aes(x = year, y = proportion_response, color = locationabbr)) + 
+  geom_line() + 
+  theme(legend.position = "none") + 
+  labs(title = "Proportion of Good Responses, 2002 to 2010 per State",
+    y = "Proportion of Good Responses")
+  
+plot_fair = plot_avg_response %>% 
+  filter(response == "Fair") %>% 
+  ggplot(aes(x = year, y = proportion_response, color = locationabbr)) + 
+  geom_line() + 
+  theme(legend.position = "none") + 
+  labs(title = "Proportion of Fair Responses, 2002 to 2010 per State",
+    y = "Proportion of Fair Responses")
+
+plot_poor = plot_avg_response %>% 
+  filter(response == "Poor") %>% 
+  ggplot(aes(x = year, y = proportion_response, color = locationabbr)) + 
+  geom_line() + 
+  labs(
+    title = "Proportion of Poor Responses, 2002 to 2010 per State",
+    y = "Proportion of Poor Responses"  + scale_color_hue(name = "State"))
+
+(plot_excellent + plot_very_good + plot_good)/(plot_fair + plot_poor)
 
 ```
 
