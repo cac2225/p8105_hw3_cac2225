@@ -158,13 +158,13 @@ To describe the size of the dataset, the number of observations and number of va
 instacart %>% 
   count(n_distinct(aisle_id))
 
-
 instacart %>% 
     group_by(aisle, order_id) %>%  
     summarise(order_count = n()) %>% 
-  group_by(aisle) %>% 
-  summarise(sum(order_count))
+    group_by(aisle) %>% 
+    summarise(total_order_count = sum(order_count)) %>% 
+  arrange(desc(total_order_count))
+
 ```
 
-
-Using the n_distinct and count functions, there are 134 distinct aisle_ids, thus there are 134 aisles. Using the group_by and summarize functions, for each aisle, 
+Using the n_distinct and count functions, there are 134 distinct aisle_ids, thus there are 134 aisles. Using the group_by and summarize functions, the number of orders made per aisle is counted and designated as order_count. Then for each aisle, the number of orders made is summed and arranged in descending order. The top 3 aisles that received the most orders are "fresh vegetables" at 150609 orders, "fresh fruits" with 150473 orders and "packaged vegetable fruits" with 78493 orders.
