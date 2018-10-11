@@ -5,9 +5,11 @@ date: "October 8, 2018"
 output: github_document
 ---
 
-#Problem 1
+#Homework 3
 
-## First load dataset
+##Problem 1
+
+The dataset and library packages are first loaded.
 
 ```{r loading BRSS data}
 
@@ -127,3 +129,42 @@ plot_poor = plot_avg_response %>%
 
 ```
 
+The mean value of the proportion of each response was generated using group by and summarize functions, grouped by year and state and response type. Five different plots were generated based on this dataset, seperated by response type. Using patchwork, a five panel plot per response type was created, each panel contained a plot of proportion of responses over the years, and the distribution was shown for each state.
+
+##Problem 2
+
+First the data Instacart is loaded.
+
+```{rloading Instacart data}
+
+instacart = instacart
+
+```
+
+```{r Preliminary review of the data}
+
+names(instacart)
+
+```
+
+To perform a preliminary review of the dataset, the names of the variables are first listed, by calling the names.
+
+It seems that there are orders that are made with descriptions of the orders using variables such as giving each order an ID number (order_id), listing the day (order_dow) and hour (order_hour_of_day) the order was made, days since the prior order was made (days_since_prior_order) etc. The orders consist of products which are assigned product ids (product_id), described by what ailse and department they came from (aisle, aisle_id, department, department_id), ordered by which user (user_id), and the product's name (product_name). Key variables would include order_id, user_id, product_id, department_id and aisle_id, since by having these variables, one can determine important information, such as what product was ordered by whom and where that product came from. The data structure appears tidy since the variables are listed as column names and corresponding values are listed under each variable.
+
+To describe the size of the dataset, the number of observations and number of variables are `r dim(instacart)`.
+
+```{r # of aisles and aisles with most orders}
+
+instacart %>% 
+  count(n_distinct(aisle_id))
+
+
+instacart %>% 
+    group_by(aisle, order_id) %>%  
+    summarise(order_count = n()) %>% 
+  group_by(aisle) %>% 
+  summarise(sum(order_count))
+```
+
+
+Using the n_distinct and count functions, there are 134 distinct aisle_ids, thus there are 134 aisles. Using the group_by and summarize functions, for each aisle, 
