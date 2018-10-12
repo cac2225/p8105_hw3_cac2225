@@ -5,6 +5,16 @@ date: "October 8, 2018"
 output: github_document
 ---
 
+```{r global settings for document}
+
+knitr::opts_chunk$set(
+  fig.width = 6,
+  fig.asp = .6,
+  out.width = "90%"
+)
+
+```
+
 #Homework 3
 
 ##Problem 1
@@ -52,7 +62,7 @@ filtered_brfss_smart2010 %>%
 To determine how many states were observed at 7 county locations, the number of distinct state-county values were determined, these values were seperated, and the number of times each state occurred was counted. The states that were counted as having appeared 7 times were filtered out.
 The states are as follows: CT, FL and NC.
 
-```{r creating spaghetti plot # locations in each state, 2002 - 2010}
+```{r creating spaghetti plot number locations in each state, 2002 to 2010}
 filtered_brfss_smart2010 %>% 
   summarize(max_year = max(year), min_year = (min(year)))
 
@@ -89,41 +99,35 @@ plot_excellent = plot_avg_response %>%
   ggplot(aes(x = year, y = proportion_response, color = locationabbr)) + 
   geom_line() + 
   theme(legend.position = "none") + 
-  labs(
-    title = "Proportion of Excellent Responses, 2002 to 2010 per State",
-    y = "Proportion of Excellent Responses")
+  labs(y = "Proportion of Excellent Responses")
 
 plot_very_good = plot_avg_response %>% 
   filter(response == "Very good") %>% 
   ggplot(aes(x = year, y = proportion_response, color = locationabbr)) + 
   geom_line() + 
   theme(legend.position = "none") + 
-  labs( title = "Proportion of Very good Responses, 2002 to 2010 per State",
-    y = "Proportion of Very good Responses")
+  labs(y = "Proportion of Very good Responses")
   
 plot_good = plot_avg_response %>% 
   filter(response == "Good") %>% 
   ggplot(aes(x = year, y = proportion_response, color = locationabbr)) + 
   geom_line() + 
   theme(legend.position = "none") + 
-  labs(title = "Proportion of Good Responses, 2002 to 2010 per State",
-    y = "Proportion of Good Responses")
+  labs(y = "Proportion of Good Responses")
   
 plot_fair = plot_avg_response %>% 
   filter(response == "Fair") %>% 
   ggplot(aes(x = year, y = proportion_response, color = locationabbr)) + 
   geom_line() + 
   theme(legend.position = "none") + 
-  labs(title = "Proportion of Fair Responses, 2002 to 2010 per State",
-    y = "Proportion of Fair Responses")
+  labs(y = "Proportion of Fair Responses")
 
 plot_poor = plot_avg_response %>% 
   filter(response == "Poor") %>% 
   ggplot(aes(x = year, y = proportion_response, color = locationabbr)) + 
   geom_line() + 
-  labs(
-    title = "Proportion of Poor Responses, 2002 to 2010 per State",
-    y = "Proportion of Poor Responses"  + scale_color_hue(name = "State"))
+  theme(legend.position = "right") + 
+  labs(y = "Proportion of Poor Responses")
 
 (plot_excellent + plot_very_good + plot_good)/(plot_fair + plot_poor)
 
@@ -133,9 +137,11 @@ The mean value of the proportion of each response was generated using group by a
 
 ##Problem 2
 
-First the data Instacart is loaded.
+First the data Instacart is loaded and the package forcats is loaded to be used for later on in the problem.
 
 ```{rloading Instacart data}
+
+library(forcats)
 
 instacart = instacart
 
@@ -149,7 +155,7 @@ names(instacart)
 
 To perform a preliminary review of the dataset, the names of the variables are first listed, by calling the names.
 
-It seems that there are orders that are made with descriptions of the orders using variables such as giving each order an ID number (order_id), listing the day (order_dow) and hour (order_hour_of_day) the order was made, days since the prior order was made (days_since_prior_order) etc. The orders consist of products which are assigned product ids (product_id), described by what ailse and department they came from (aisle, aisle_id, department, department_id), ordered by which user (user_id), and the product's name (product_name). Key variables would include order_id, user_id, product_id, department_id and aisle_id, since by having these variables, one can determine important information, such as what product was ordered by whom and where that product came from. The data structure appears tidy since the variables are listed as column names and corresponding values are listed under each variable.
+It seems that there are orders that are made with descriptions of the orders using variables such as giving each order an ID number (order_id), listing the day (order_dow) and hour (order_hour_of_day) the order was made, days since the prior order was made (days_since_prior_order) etc. Order_dow has values from 0 to 6, each number corresponding to a day of the week. The orders consist of products which are assigned product ids (product_id), described by what ailse and department they came from (aisle, aisle_id, department, department_id), ordered by which user (user_id), and the product's name (product_name). Key variables would include order_id, user_id, product_id, department_id and aisle_id, since by having these variables, one can determine important information, such as what product was ordered by whom and where that product came from. The data structure appears tidy since the variables are listed as column names and corresponding values are listed under each variable.
 
 To describe the size of the dataset, the number of observations and number of variables are `r dim(instacart)`.
 
@@ -162,9 +168,51 @@ instacart %>%
     group_by(aisle, order_id) %>%  
     summarise(order_count = n()) %>% 
     group_by(aisle) %>% 
-    summarise(total_order_count = sum(order_count)) %>% 
+    summarise(total_order_count =
+                sum(order_count)) %>%
   arrange(desc(total_order_count))
 
 ```
 
 Using the n_distinct and count functions, there are 134 distinct aisle_ids, thus there are 134 aisles. Using the group_by and summarize functions, the number of orders made per aisle is counted and designated as order_count. Then for each aisle, the number of orders made is summed and arranged in descending order. The top 3 aisles that received the most orders are "fresh vegetables" at 150609 orders, "fresh fruits" with 150473 orders and "packaged vegetable fruits" with 78493 orders.
+
+```{r number ordered items per aisle}
+
+orders_count = instacart %>% 
+    group_by(aisle, order_id, department, department_id) %>%
+    summarise(order_count = n()) %>% 
+    group_by(aisle, department, department_id) %>% 
+    summarise(total_order_count =
+                sum(order_count))
+
+ggplot(orders_count, aes(fct_reorder(aisle,  department_id), total_order_count, fill = department_id)) + 
+  geom_bar(stat = "identity") + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) 
+
+```
+
+A subset of data is generated, counting the total number of items ordered from each aisle, using the group_by and summarise functions. Using ggplot, the subset of data is plotted into a bar chart, with the aisles on the x axis and the total orders count on the y axis. The aisles are ordered and grouped by department id, with different colors representing different departments.
+
+```{r most popular item in certain aisles}
+
+most_popular_products = instacart %>% 
+  filter(aisle %in% c("baking ingredients","dog food care","packaged vegetables fruits")) %>% 
+    group_by(aisle, product_name) %>%
+    summarise(product_count = n()) %>% 
+  filter(product_count == max(product_count))
+
+```
+
+To determine the most popular products in the three specific aisles, the dataset was first filterd by the three specific aisles. Then using the group_by and summarise functions, the number of products bought from each aisle were counted up and the product with the largest count were extracted. The most popular item from the baking ingredients aisle is Light Brown Sugar with 499 units ordered. The most popular item from the dog food care aisle is snack sticks chicken and rice dog treats with 30 units ordered. The most popular item from the packaged vegetables and fruits aisle is organic baby spinach with 9784 units ordered.
+
+```{r Pink lady apples and coffee ice cream}
+
+instacart %>% 
+  filter(product_name %in% c("Pink Lady Apples","Coffee Ice Cream")) %>% 
+  group_by(order_dow, product_name) %>%
+  summarise(mean_hour = mean(order_hour_of_day)) %>% 
+  spread(key = order_dow, value = mean_hour) %>% 
+  knitr::kable(digits = 1)
+
+
+```
