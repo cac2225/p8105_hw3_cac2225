@@ -214,5 +214,8 @@ instacart %>%
   spread(key = order_dow, value = mean_hour) %>% 
   knitr::kable(digits = 1)
 
-
 ```
+
+A 2x7 table is formed from the information filtered and summarized from the original dataset. Filter was used to extract information on the products pink lady apples and coffee ice cream. Group_by and summarise were used to calculate the mean hour of the day that which these products are order, by day of the week. Spread and knit were used to form the final 2x7 table. Looking at the table, for Coffee Ice Cream, the earliest mean time of the day the product is ordered is on Fridays (day 5) at 12.3 The latest time it's ordered is on Tuesday (day 2) at 15.4. For Pink Lady Apples, the earliest this product is ordered is on average Mondays (day1) at 11.4 and latest on average on Sundays at 13.4.
+
+#Problem 3
