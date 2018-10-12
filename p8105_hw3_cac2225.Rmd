@@ -99,37 +99,37 @@ plot_excellent = plot_avg_response %>%
   ggplot(aes(x = year, y = proportion_response, color = locationabbr)) + 
   geom_line() + 
   theme(legend.position = "none") + 
-  labs(y = "Proportion of Excellent Responses")
+  labs(y = "Excellent Responses")
 
 plot_very_good = plot_avg_response %>% 
   filter(response == "Very good") %>% 
   ggplot(aes(x = year, y = proportion_response, color = locationabbr)) + 
   geom_line() + 
   theme(legend.position = "none") + 
-  labs(y = "Proportion of Very good Responses")
+  labs(y = "Very good Responses")
   
 plot_good = plot_avg_response %>% 
   filter(response == "Good") %>% 
   ggplot(aes(x = year, y = proportion_response, color = locationabbr)) + 
   geom_line() + 
-  theme(legend.position = "none") + 
-  labs(y = "Proportion of Good Responses")
+  theme(legend.position = "right") + 
+  labs(y = "Good Responses")
   
 plot_fair = plot_avg_response %>% 
   filter(response == "Fair") %>% 
   ggplot(aes(x = year, y = proportion_response, color = locationabbr)) + 
   geom_line() + 
   theme(legend.position = "none") + 
-  labs(y = "Proportion of Fair Responses")
+  labs(y = "Fair Responses")
 
 plot_poor = plot_avg_response %>% 
   filter(response == "Poor") %>% 
   ggplot(aes(x = year, y = proportion_response, color = locationabbr)) + 
   geom_line() + 
-  theme(legend.position = "right") + 
-  labs(y = "Proportion of Poor Responses")
+  theme(legend.position = "none") + 
+  labs(y = "Poor Responses")
 
-(plot_excellent + plot_very_good + plot_good)/(plot_fair + plot_poor)
+(plot_excellent)/(plot_very_good)/(plot_good)/(plot_fair)/(plot_poor)
 
 ```
 
