@@ -5,6 +5,10 @@ date: "October 8, 2018"
 output: github_document
 ---
 
+##change the names, labels for each plot, rename for variables?
+## interpret for each plot
+## make sure they knit
+
 ```{r global settings for document}
 
 knitr::opts_chunk$set(
@@ -94,48 +98,14 @@ Dataset was filtered by year (2002, 2006 and 2010), response (Excellent) and loc
 
 plot_avg_response = filtered_brfss_smart2010 %>% 
   group_by(year, locationabbr, response) %>% 
-  summarize(proportion_response = mean(data_value))
-
-plot_excellent = plot_avg_response %>% 
-  filter(response == "Excellent") %>% 
-  ggplot(aes(x = year, y = proportion_response, color = locationabbr)) + 
-  geom_line() + 
-  theme(legend.position = "none") + 
-  labs(y = "Excellent Responses")
-
-plot_very_good = plot_avg_response %>% 
-  filter(response == "Very good") %>% 
-  ggplot(aes(x = year, y = proportion_response, color = locationabbr)) + 
-  geom_line() + 
-  theme(legend.position = "none") + 
-  labs(y = "Very good Responses")
-  
-plot_good = plot_avg_response %>% 
-  filter(response == "Good") %>% 
-  ggplot(aes(x = year, y = proportion_response, color = locationabbr)) + 
-  geom_line() + 
-  theme(legend.position = "right") + 
-  labs(y = "Good Responses")
-  
-plot_fair = plot_avg_response %>% 
-  filter(response == "Fair") %>% 
-  ggplot(aes(x = year, y = proportion_response, color = locationabbr)) + 
-  geom_line() + 
-  theme(legend.position = "none") + 
-  labs(y = "Fair Responses")
-
-plot_poor = plot_avg_response %>% 
-  filter(response == "Poor") %>% 
-  ggplot(aes(x = year, y = proportion_response, color = locationabbr)) + 
-  geom_line() + 
-  theme(legend.position = "none") + 
-  labs(y = "Poor Responses")
-
-(plot_excellent)/(plot_very_good)/(plot_good)/(plot_fair)/(plot_poor)
+  summarize(proportion_response = mean(data_value)) %>% 
+  ggplot(aes(x = year, y = proportion_response)) + 
+  facet_grid(. ~ response) + 
+  geom_violin()
 
 ```
 
-The mean value of the proportion of each response was generated using group by and summarize functions, grouped by year and state and response type. Five different plots were generated based on this dataset, seperated by response type. Using patchwork, a five panel plot per response type was created, each panel contained a plot of proportion of responses over the years, and the distribution was shown for each state.
+The mean value of the proportion of each response was generated using group by and summarize functions, grouped by year and response type. Five different plots were generated based on this dataset, seperated by response type. Using facet, a five panel plot per response type was created, each panel contained a violin plot of proportion of responses over the years. Thus over the years, for excellent responses, the proportion of response were mainly around 20. The max proportion was 30 and min proportion was 10 in 2006.
 
 ##Problem 2
 
@@ -229,13 +199,9 @@ ny_noaa = ny_noaa
 
 ```
 
-##Preliminary description of dataset
-
-The ny_noaa dataset consists of seven variables that describe weather station (id), amount of precipitation (prcp), amount of snowfall and depth (snow and snwd), temperature (tmax and tmin) and date (date). The total number of observation rows and number of columns are `r dim r dim(ny_noaa)`. Key variables would be id and date, since these provide specific identification for each observation. The dataset is tidy since each variable is its own seperate column. The date column could be further seperated into month, year and day.
+The ny_noaa dataset consists of seven variables that describe weather station (id), amount of precipitation (prcp), amount of snowfall and depth (snow and snwd), temperature (tmax and tmin) and date (date). The total number of observation rows and number of columns are `r dim(ny_noaa)`. Key variables would be id and date, since these provide specific identification for each observation. The dataset is tidy since each variable is its own seperate column. The date column could be further seperated into month, year and day.
 
 Each weather station might only collect a certain subset of variables, thus there is missing data. Missing data could cause an issue when we looking for trends, skewing or hiding any potential relationships that should normally appear in the data/plot visualizations.
-
-##Answering questions about dataset ny_noaa
 
 ```{r variables for y,m,d, units}
 
@@ -280,13 +246,8 @@ plot_temp = ny_noaa %>% ggplot(aes(x = tmin, y = tmax)) + geom_smooth(se = FALSE
 
 plot_snow = ny_noaa %>% 
   filter(snow > 0, snow < 100) %>% 
-  ggplot(aes(x = year, y = snow)) +
-  geom_violin()
-
-ny_noaa %>% 
-  filter(snow > 0, snow < 100) %>% 
   ggplot(aes(x = snow, y = year)) +
-  geom_density_ridges(alpha = .4)
+  geom_violin()
 
 (plot_temp)/(plot_snow)
 
