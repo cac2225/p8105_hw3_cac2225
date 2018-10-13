@@ -35,6 +35,7 @@ library(dplyr)
 library(ggplot2)
 library(patchwork)
 library(forcats)
+library(ggridges)
 
 ```
 
@@ -146,6 +147,8 @@ instacart = instacart
 
 ```
 
+## Preliminary description of dataset
+
 ```{r Preliminary review of the data}
 
 names(instacart)
@@ -157,6 +160,8 @@ To perform a preliminary review of the dataset, the names of the variables are f
 It seems that there are orders that are made with descriptions of the orders using variables such as giving each order an ID number (order_id), listing the day (order_dow) and hour (order_hour_of_day) the order was made, days since the prior order was made (days_since_prior_order) etc. Order_dow has values from 0 to 6, each number corresponding to a day of the week. The orders consist of products which are assigned product ids (product_id), described by what ailse and department they came from (aisle, aisle_id, department, department_id), ordered by which user (user_id), and the product's name (product_name). Key variables would include order_id, user_id, product_id, department_id and aisle_id, since by having these variables, one can determine important information, such as what product was ordered by whom and where that product came from. The data structure appears tidy since the variables are listed as column names and corresponding values are listed under each variable.
 
 To describe the size of the dataset, the number of observations and number of variables are `r dim(instacart)`.
+
+##Answering questions about the dataset instacart
 
 ```{r # of aisles and aisles with most orders}
 
@@ -178,16 +183,12 @@ Using the n_distinct and count functions, there are 134 distinct aisle_ids, thus
 ```{r number ordered items per aisle}
 
 orders_count = instacart %>% 
-    group_by(aisle, order_id, aisle_id, department) %>%
-    summarise(order_count = n()) %>% 
-    group_by(aisle, aisle_id, department) %>% 
-    summarise(total_order_count =
-                sum(order_count))
+    group_by(aisle, aisle_id, department) %>%
+    summarise(total_order_count = n())
 
 ggplot(orders_count, aes(fct_reorder(aisle, desc(total_order_count)), total_order_count, fill = department)) + 
   geom_bar(stat = "identity") + 
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) + 
-  + scale_x_discrete(, expand = waiver(), position = "bottom")
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1), text = element_text(size = 7))
 
 ```
 
@@ -220,8 +221,75 @@ A 2x7 table is formed from the information filtered and summarized from the orig
 
 #Problem 3
 
+The dataset is first loaded.
+
 ```{r load NY NOAA data}
 
-
+ny_noaa = ny_noaa
 
 ```
+
+##Preliminary description of dataset
+
+The ny_noaa dataset consists of seven variables that describe weather station (id), amount of precipitation (prcp), amount of snowfall and depth (snow and snwd), temperature (tmax and tmin) and date (date). The total number of observation rows and number of columns are `r dim r dim(ny_noaa)`. Key variables would be id and date, since these provide specific identification for each observation. The dataset is tidy since each variable is its own seperate column. The date column could be further seperated into month, year and day.
+
+Each weather station might only collect a certain subset of variables, thus there is missing data. Missing data could cause an issue when we looking for trends, skewing or hiding any potential relationships that should normally appear in the data/plot visualizations.
+
+##Answering questions about dataset ny_noaa
+
+```{r variables for y,m,d, units}
+
+ny_noaa = ny_noaa %>% 
+  separate(date, into = c("year", "month", "day"), sep = "-" ) %>% 
+  mutate(prcp = as.numeric(prcp)/10,
+         tmin = as.numeric(tmin)/10,
+         tmax = as.numeric(tmax)/10)
+
+```
+
+Since the values of prcp, tmin and tmax are originally in tenths of a millimeter, they should first be converted into numeric variables, then divided by 10 to convert into millimeters. Additionally, to seperate the date variable, the separate function is used and the values are split via the symbol "-".
+
+```{r most commonly observed values}
+
+ny_noaa %>% 
+  group_by(snow) %>% 
+  summarise(common_snowfall = n()) %>% 
+  arrange(desc(common_snowfall))
+
+```
+
+Using the group by and summarise functions, the most commonly observed values for snowfall are 0, NA and 25 mm. 0 may be the most common since it only really snows in the winter months in New York, which is three to four months out of the year. NA is very common since not all of the stations collect values on snowfall.
+
+```{r plot mean max temps January and July}
+
+plot_mean_max_temp = ny_noaa %>% 
+  filter(month == "01" | month == "07") %>%
+  group_by(id, month, year) %>% 
+  summarise(mean_max_temp = mean(tmax)) %>% 
+  ggplot(aes(x = id, y = mean_max_temp)) + 
+  geom_point() + 
+  facet_grid(. ~ month)
+
+```
+
+Looking at the scatterplot produced, the cluster of points only occurs amongst a certain subset of stations. Thus confirming that only certain stations collect certain datapoints/information - in this case only certain stations collected termperature while the rest had missing data. In January, the mean max temperatures are all in the lower range, varying from -10 to 10 degrees Celsius. There are a few outliers with temperatures lower than -10 degrees. In July, the mean max temperatures are all in the higher range, varying from 20 to 30 degrees, with a few outliers below 20 degrees.
+
+```{r plot tmax vs t min}
+
+plot_temp = ny_noaa %>% ggplot(aes(x = tmin, y = tmax)) + geom_smooth(se = FALSE)
+
+plot_snow = ny_noaa %>% 
+  filter(snow > 0, snow < 100) %>% 
+  ggplot(aes(x = year, y = snow)) +
+  geom_violin()
+
+ny_noaa %>% 
+  filter(snow > 0, snow < 100) %>% 
+  ggplot(aes(x = snow, y = year)) +
+  geom_density_ridges(alpha = .4)
+
+(plot_temp)/(plot_snow)
+
+```
+
+I created a two panel plot with a linear graph of tmin versus tmax on top and a violin plot of snowfall distribution greater than 0 mm and less than 100 mm for each year on the bottom panel. The linear plot shows that as t min increases, so does t max, as expected, since in the warmer months, the minimum and maximum temperatures are expected to increase. While in the colder months, both tmax and tmin would decrease. For each year, the distribution of snowfall seems similar. Most of the snowfall received occurs between 0 to 25 mm. There are measurements of snowfall clustering around 50 and 75 as well, while the larger amounts of snowfall taper off at 100 mm.
