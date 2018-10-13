@@ -5,10 +5,6 @@ date: "October 8, 2018"
 output: github_document
 ---
 
-##change the names, labels for each plot, rename for variables?
-## interpret for each plot
-## make sure they knit
-
 ```{r global settings for document}
 
 knitr::opts_chunk$set(
@@ -80,7 +76,7 @@ plot_spaghetti = filtered_brfss_smart2010 %>%
 ggplot(plot_spaghetti, aes(x = year, y = n_counties, color = state)) + 
   geom_line() + 
   labs(
-    title = "Spaghetti Plot Number of Locations in Each State, from 2002 to 2010",
+    title = "# of Locations per State, 2002 to 2010",
     y = "Number of Locations"
   )
 ```
@@ -111,7 +107,8 @@ plot_avg_response = filtered_brfss_smart2010 %>%
     title = "Five Panel Plot per Response type - distribution of State-level averages over time",
     y = "Proportion of each Response"
   ) + 
-  theme(axis.text.x = element_text(angle = 0, vjust = 0.5, hjust = 1), text = element_text(size = 7))
+  theme(axis.text.x = element_text(angle = 0, vjust = 0.5, hjust = 1), text = element_text(size = 7)) + 
+  theme(plot.title = element_text(size = 5))
 
 ```
 
@@ -133,11 +130,14 @@ instacart = instacart
 
 names(instacart)
 
+instacart = instacart %>% 
+  mutate(order_dow = recode(order_dow, `0` = "Sunday", `1` = "Monday", `2` = "Tuesday", `3` = "Wednesday", `4` = "Thursday", `5` = "Friday", `6` = "Saturday"))
+
 ```
 
-To perform a preliminary review of the dataset, the names of the variables are first listed, by calling the names.
+To perform a preliminary review of the dataset, the names of the variables are first listed, by calling the names. The variable names all appear to be in lower snakecase. However, the names of the order_dow values are recoded from numerals to actual names of the days of the week.
 
-It seems that there are orders that are made with descriptions of the orders using variables such as giving each order an ID number (order_id), listing the day (order_dow) and hour (order_hour_of_day) the order was made, days since the prior order was made (days_since_prior_order) etc. Order_dow has values from 0 to 6, each number corresponding to a day of the week. The orders consist of products which are assigned product ids (product_id), described by what ailse and department they came from (aisle, aisle_id, department, department_id), ordered by which user (user_id), and the product's name (product_name). Key variables would include order_id, user_id, product_id, department_id and aisle_id, since by having these variables, one can determine important information, such as what product was ordered by whom and where that product came from. The data structure appears tidy since the variables are listed as column names and corresponding values are listed under each variable.
+It seems that there are orders that are made with descriptions of the orders using variables such as giving each order an ID number (order_id), listing the day (order_dow) and hour (order_hour_of_day) the order was made, days since the prior order was made (days_since_prior_order) etc. Order_dow has values from 0 to 6, each number corresponding to a day of the week, which have been recoded into actual days of the week. The orders consist of products which are assigned product ids (product_id), described by what ailse and department they came from (aisle, aisle_id, department, department_id), ordered by which user (user_id), and the product's name (product_name). Key variables would include order_id, user_id, product_id, department_id and aisle_id, since by having these variables, one can determine important information, such as what product was ordered by whom and where that product came from. The data structure appears tidy since the variables are listed as column names and corresponding values are listed under each variable.
 
 To describe the size of the dataset, the number of observations and number of variables are `r dim(instacart)`.
 
@@ -168,11 +168,16 @@ orders_count = instacart %>%
 
 ggplot(orders_count, aes(fct_reorder(aisle, desc(total_order_count)), total_order_count, fill = department)) + 
   geom_bar(stat = "identity") + 
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1), text = element_text(size = 7))
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1), text = element_text(size = 5)) + 
+  labs(
+    title = "Most popular aisles - based on order count",
+    x = "Aisle Name",
+    y = "Number of orders"
+  )
 
 ```
 
-A subset of data is generated, counting the total number of items ordered from each aisle, using the group_by and summarise functions. Using ggplot, the subset of data is plotted into a bar chart, with the aisles on the x axis and the total orders count on the y axis. The aisles are ordered and grouped by department id, with different colors representing different departments.
+A subset of data is generated, counting the total number of items ordered from each aisle, using the group_by and summarise functions. Using ggplot, the subset of data is plotted into a bar chart, with the aisles on the x axis and the total orders count on the y axis. The aisles are ordered from most to least orders, and with different colors representing different departments. The aisle that received the most orders is fresh vegetables with approximately 150,000 orders, and the aisle withthe least orders is beauty.
 
 ```{r most popular item in certain aisles}
 
@@ -201,7 +206,7 @@ A 2x7 table is formed from the information filtered and summarized from the orig
 
 #Problem 3
 
-The dataset is first loaded.
+The dataset is first loaded and the variables are viewed. The variable names are all in lower snake case thus they are not modified. 
 
 ```{r load NY NOAA data}
 
@@ -209,15 +214,14 @@ ny_noaa = ny_noaa
 
 ```
 
-The ny_noaa dataset consists of seven variables that describe weather station (id), amount of precipitation (prcp), amount of snowfall and depth (snow and snwd), temperature (tmax and tmin) and date (date). The total number of observation rows and number of columns are `r dim(ny_noaa)`. Key variables would be id and date, since these provide specific identification for each observation. The dataset is tidy since each variable is its own seperate column. The date column could be further seperated into month, year and day.
+The ny_noaa dataset consists of seven variables that describe weather station (id), amount of precipitation (prcp), amount of snowfall and depth (snow and snwd), temperature (tmax and tmin) and date (date). The total number of observation rows and number of columns are `r dim(ny_noaa)`. Key variables would be id and date, since these provide specific identification for each observation. The dataset is tidy since each variable is its own seperate column, however the date column could be further seperated into month, year and day.
 
 Each weather station might only collect a certain subset of variables, thus there is missing data. Missing data could cause an issue when we looking for trends, skewing or hiding any potential relationships that should normally appear in the data/plot visualizations.
 
 ```{r variables for y,m,d, units}
 
 ny_noaa = ny_noaa %>% 
-  separate(date, into = c("year", "month", "day"), sep = "-" ) %>% 
-  mutate(prcp = as.numeric(prcp)/10,
+  separate(date, into = c("year", "month", "day"), sep = "-" ) %>% mutate(prcp = as.numeric(prcp)/10,
          tmin = as.numeric(tmin)/10,
          tmax = as.numeric(tmax)/10)
 
@@ -252,15 +256,23 @@ Looking at the scatterplot produced, the cluster of points only occurs amongst a
 
 ```{r plot tmax vs t min}
 
-plot_temp = ny_noaa %>% ggplot(aes(x = tmin, y = tmax)) + geom_smooth(se = FALSE)
+plot_temp = ny_noaa %>% ggplot(aes(x = tmin, y = tmax)) + geom_smooth(se = FALSE) + 
+  labs(
+    title = "Plot of t-min versus t max"
+  )
 
-plot_snow = ny_noaa %>% 
+plot_snow_v = ny_noaa %>% 
   filter(snow > 0, snow < 100) %>% 
-  ggplot(aes(x = snow, y = year)) +
-  geom_violin()
+  ggplot(aes(y = snow, x = year)) + 
+  geom_violin() + 
+  labs(
+    title = "Distribution of Snowfall greater than 0 mm and less than 100 mm, for each year"
+  ) + 
+  theme(plot.title = element_text(size = 7)) + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1), text = element_text(size = 7))
 
-(plot_temp)/(plot_snow)
+(plot_temp)/(plot_snow_v)
 
 ```
 
-I created a two panel plot with a linear graph of tmin versus tmax on top and a violin plot of snowfall distribution greater than 0 mm and less than 100 mm for each year on the bottom panel. The linear plot shows that as t min increases, so does t max, as expected, since in the warmer months, the minimum and maximum temperatures are expected to increase. While in the colder months, both tmax and tmin would decrease. For each year, the distribution of snowfall seems similar. Most of the snowfall received occurs between 0 to 25 mm. There are measurements of snowfall clustering around 50 and 75 as well, while the larger amounts of snowfall taper off at 100 mm.
+I created a two panel plot with a line graph of tmin versus tmax on top and violin graphs of snowfall distribution greater than 0 mm and less than 100 mm for each year on the bottom panel. The linear plot shows that as t min increases, so does t max, as expected, since in the warmer months, the minimum and maximum temperatures are expected to increase. While in the colder months, both tmax and tmin would decrease. For each year, the distribution of snowfall seems similar. Most of the snowfall received occurs between 0 to 25 mm. There are measurements of snowfall clustering around 50 and 75 as well, while the larger amounts of snowfall taper off at 100 mm.
