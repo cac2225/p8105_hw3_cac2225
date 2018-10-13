@@ -43,7 +43,7 @@ library(ggridges)
 
 ```
 
-To clean the dataset, the variable names will be cleaned using the janitor package, function clean_names. Change the variable names as needed.
+To clean the dataset, the variable names will be cleaned using the janitor package, function clean_names.
 The data is filtered based on topic, Overall Health, and responses Excellent to Poor. The response variable will be turned into a factor variable and its responses ordered.
 
 ```{r data cleaning step}
@@ -77,7 +77,12 @@ plot_spaghetti = filtered_brfss_smart2010 %>%
   group_by(year, state) %>% 
   summarize(n_counties = n())
 
-ggplot(plot_spaghetti, aes(x = year, y = n_counties, color = state)) + geom_line()
+ggplot(plot_spaghetti, aes(x = year, y = n_counties, color = state)) + 
+  geom_line() + 
+  labs(
+    title = "Spaghetti Plot Number of Locations in Each State, from 2002 to 2010",
+    y = "Number of Locations"
+  )
 ```
 
 First I determined what the minimum and maximum year values are, which are 2002 and 2010, thus there was no need to filter by year any further. I created a new set of data, named plot_spaghetti, seperating the variable locationdesc to ultimately count the number of times a state is recorded within a certain year. I plotted this setting year on the x axis, number of times a state has appeared which equals number of locations per state, and a different color for each state.
@@ -101,11 +106,16 @@ plot_avg_response = filtered_brfss_smart2010 %>%
   summarize(proportion_response = mean(data_value)) %>% 
   ggplot(aes(x = year, y = proportion_response)) + 
   facet_grid(. ~ response) + 
-  geom_violin()
+  geom_violin() + 
+  labs(
+    title = "Five Panel Plot per Response type - distribution of State-level averages over time",
+    y = "Proportion of each Response"
+  ) + 
+  theme(axis.text.x = element_text(angle = 0, vjust = 0.5, hjust = 1), text = element_text(size = 7))
 
 ```
 
-The mean value of the proportion of each response was generated using group by and summarize functions, grouped by year and response type. Five different plots were generated based on this dataset, seperated by response type. Using facet, a five panel plot per response type was created, each panel contained a violin plot of proportion of responses over the years. Thus over the years, for excellent responses, the proportion of response were mainly around 20. The max proportion was 30 and min proportion was 10 in 2006.
+The mean values of the proportion of each response was generated using group by and summarize functions, grouped by year and response type. Using facet, a five panel plot per response type was created, each panel contained a violin plot of proportion of responses over the years. Thus over the years, the majority of the proportion of excellent responses were mainly around 20. The max proportion was about 30 and min proportion was about 12 in 2006. Over the years, the majority of the proportion of very good responses were around 35, with max proportion at around 43 and min proportion at around 26 in 2006. The majority of the proportion of good responses were around 30, with max proportion at 36 and min at 28 in 2006. The majority of the proportion of fair responses were around 10, with max at 27, min at 7 in 2006. The majority of the proportion of poor responses were around 4, with min at 3, max at 9 in 2006.
 
 ##Problem 2
 
