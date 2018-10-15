@@ -104,6 +104,8 @@ plot_avg_response = filtered_brfss_smart2010 %>%
   group_by(year, locationabbr, response) %>% 
   summarize(proportion_response = mean(data_value))
 
+plot_avg_response
+
 ggplot(plot_avg_response, aes(x = year, y = proportion_response)) + 
   facet_grid(. ~ response) + 
   geom_violin() + 
@@ -186,11 +188,12 @@ A subset of data is generated, counting the total number of items ordered from e
 
 ```{r most popular item in certain aisles}
 
-most_popular_products = instacart %>% 
+instacart %>% 
   filter(aisle %in% c("baking ingredients","dog food care","packaged vegetables fruits")) %>% 
     group_by(aisle, product_name) %>%
     summarise(product_count = n()) %>% 
-  filter(product_count == max(product_count))
+  filter(product_count == max(product_count)) %>% 
+   knitr::kable(digits = 1)
 
 ```
 
@@ -247,8 +250,17 @@ Using the group by and summarise functions, the most commonly observed values fo
 
 ```{r plot mean max temps January and July}
 
-plot_mean_max_temp = ny_noaa %>% 
+ny_noaa %>% 
   filter(month == "01" | month == "07") %>%
+  group_by(id, month, year) %>% 
+  summarise(mean_max_temp = mean(tmax)) %>% 
+  ggplot(aes(x = id, y = mean_max_temp)) + 
+  geom_point() + 
+  facet_grid(. ~ month)
+
+ny_noaa %>% 
+  filter(month == "01" | month == "07") %>%
+  filter(!is.na(tmax)) %>% 
   group_by(id, month, year) %>% 
   summarise(mean_max_temp = mean(tmax)) %>% 
   ggplot(aes(x = id, y = mean_max_temp)) + 
@@ -257,7 +269,9 @@ plot_mean_max_temp = ny_noaa %>%
 
 ```
 
-Looking at the scatterplot produced, the cluster of points only occurs amongst a certain subset of stations. Thus confirming that only certain stations collect certain datapoints/information - in this case only certain stations collected termperature while the rest had missing data. In January, the mean max temperatures are all in the lower range, varying from -10 to 10 degrees Celsius. There are a few outliers with temperatures lower than -10 degrees. In July, the mean max temperatures are all in the higher range, varying from 20 to 30 degrees, with a few outliers below 20 degrees.
+Looking at the scatterplot produced, the cluster of points only occurs amongst a certain subset of stations. Thus confirming that only certain stations collect certain datapoints/information - in this case only certain stations collected termperature while the rest had missing data. Because there is a large number stations, I created a second graph to look at only the stations with non-missing data for max temperature. 
+
+Across all years, in January, the mean max temperatures are all in the lower range, varying from -10 to 10 degrees Celsius. There are a few outliers with temperatures lower than -10 degrees. Across all years, in July, the mean max temperatures are all in the higher range, varying from 20 to 30 degrees, with a few outliers below 20 degrees. 
 
 ```{r plot tmax vs t min}
 
